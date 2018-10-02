@@ -5,7 +5,7 @@
 	STDOUT 		equ 1
 	
 	section .data
-	value dw 0
+	value dw 1
 	prtVal db '0'
 	
 	section .text
@@ -19,8 +19,17 @@ _start:
 	mov ecx, [value]
 	add ecx, '0'
 	mov [prtVal], ecx
-	
 	mov ecx, prtVal
+	mov edx, 1
+	int 80h
+
+	
+	dec WORD [value]
+	add byte [value], '0'
+
+	mov eax, SYS_WRITE
+	mov ebx, STDOUT
+	mov ecx, value
 	mov edx, 1
 	int 0x80
 
