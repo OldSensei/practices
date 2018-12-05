@@ -16,7 +16,7 @@ _start:
 	mov ecx, [num1]
 	cmp ecx, [num2]
 	
-	jg greater
+	jg greater		;jump if greater
 
 	mov eax, 4
 	mov edx, 1
