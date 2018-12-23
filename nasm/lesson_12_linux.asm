@@ -11,9 +11,7 @@ _start:
 calc:
 	add ebx, [eax]
 	add eax, BYTE 1
-	
-	dec ecx
-	jnz calc
+	loop calc
 
 	add ebx, '0'
 	mov [sum], ebx
