@@ -1,3 +1,5 @@
+	;; example of recursion
+	;; Factorial 3
 	section .text
 	global _start
 

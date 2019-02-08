@@ -26,7 +26,6 @@ _start:
 	mov edx, 2
 	int 0x80
 
-;;; count length of string
 	xor eax, eax
 	
 	cld
