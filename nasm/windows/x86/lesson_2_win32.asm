@@ -18,7 +18,7 @@ section .text
 
 ;;
 _start:
-	mov [character], DWORD 0x00000a30 ;;"0\r\n"
+	mov [character], DWORD 0x00000a30 ;;"0\n"
 	
 	mov eax, [character]
 	add eax, IS_ZERO	;; added 0 to eax
