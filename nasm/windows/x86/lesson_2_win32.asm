@@ -11,10 +11,14 @@ extern  _ExitProcess@4
 %xdefine ONE 1
 %xdefine IS_ONE ONE
 
+%define GREETINGS 'Hello from macro!'
+%strlen length GREETINGS
+
 section .text
 
+;;
 _start:
-	mov [character], BYTE '0'
+	mov [character], DWORD 0x00000a30 ;;"0\r\n"
 	
 	mov eax, [character]
 	add eax, IS_ZERO	;; added 0 to eax
@@ -34,7 +38,7 @@ _start:
 	push 0
 	lea eax, [ebp-4]
 	push eax
-	push 1
+	push 2
 	push character
 	push ebx
 	call _WriteFile@20
@@ -49,7 +53,7 @@ _start:
 	push 0
 	lea eax, [ebp-4]
 	push eax
-	push 1
+	push 2
 	push character
 	push ebx
 	call _WriteFile@20
@@ -65,8 +69,16 @@ _start:
 	push 0
 	lea eax, [ebp-4]
 	push eax
-	push 1
+	push 2
 	push character
+	push ebx
+	call _WriteFile@20
+	
+	push 0
+	lea eax, [ebp-4]
+	push eax
+	push length
+	push greetings
 	push ebx
 	call _WriteFile@20
 	
@@ -74,5 +86,7 @@ _start:
 	call _ExitProcess@4
 
 section .bss
-	character resb 1
-	
+	character resd 1
+
+section .data
+	greetings db GREETINGS
