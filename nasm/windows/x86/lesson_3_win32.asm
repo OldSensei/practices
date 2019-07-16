@@ -7,11 +7,13 @@ extern  _WriteFile@20
 extern  _ExitProcess@4
 
 ;;greedy macro param
-%macro PRINT 2+
+%macro printMessage 0-2+
 	jmp %%strend
 	;; local variable for data of string
-	%%str: db %2
+	%defstr ARG_COUNT_STR %0
+	%%str: db %2, 'Argument count: ', ARG_COUNT_STR
 	%%len: dd $ - %%str
+	%undef ARG_COUNT_STR
 	
 %%strend:
 	sub esp, 4
@@ -35,7 +37,7 @@ _start:
 	call _GetStdHandle@4
 	mov ebx, eax
 	
-	PRINT ebx, "Hello from multi-line macro!", 0x0
+	printMessage ebx, "Hello from multi-line macro!"
 	
 	push 0
 	call _ExitProcess@4
