@@ -28,16 +28,41 @@ PrintMessage:
 	push ebx
 	call _WriteFile@20
 	ret
+
+;;using stack for passing arguments
+;;order of arguments: [message][output handle][message length]
+PrintMessageS:
+	mov ebp, esp
+	sub esp, 4
+	
+	mov ecx, DWORD [ebp + 4]
+	mov ebx, DWORD [ebp + 8]
+	mov eax, DWORD [ebp + 12]
+	
+	lea edx, [ebp-4]
+	
+	push 0
+	push edx
+	push ecx
+	push eax
+	push ebx
+	call _WriteFile@20
+	
+	ret
 	
 _start:
 	push STD_OUT_HANDLE
 	call _GetStdHandle@4
 	mov ebx, eax
 	
-	mov eax, message
-	mov ecx, len
+	;;mov eax, message
+	;;mov ecx, len
+	;;call PrintMessage
 	
-	call PrintMessage
+	push message
+	push ebx
+	push len
+	call PrintMessageS
 	
 	push 0
 	call _ExitProcess@4
