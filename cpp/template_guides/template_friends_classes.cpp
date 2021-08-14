@@ -70,6 +70,33 @@ std::ostream& operator<<(std::ostream&  strm, const Stack<T>& stack)
 }
 
 
+//friend declaration inside template class
+template<class T>
+class AddSpace
+{
+public:
+	AddSpace(const T& value) : m_ref(value)
+	{}
+
+	friend std::ostream& operator<<(std::ostream& stream, const AddSpace<T>& spc)
+	{
+		return stream << spc.m_ref << ' ';		
+	}
+
+private:
+	const T& m_ref;
+};
+
+
+namespace
+{
+	template<class ... Args>
+	void print(const Args& ... args)
+	{
+		( std::cout << ... << AddSpace(args) ) << std::endl;
+	}
+}
+
 int main(int argc, const char* argv[])
 {
 	Stack<int> st;
@@ -77,6 +104,9 @@ int main(int argc, const char* argv[])
 	st.push(2);
 	st.push(3);
 	
-	std::cout << st;
+	std::cout << st << std::endl;
+
+	print('a', 1, 'b', 2);
+
 	return 0;
 }
