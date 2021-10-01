@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.14)
+
+project(algorithms VERSION 0.1 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+set(CMAKE_CONFIGURATION_TYPES Debug Release)
+
+set(SOURCE_DIR "${PROJECT_SOURCE_DIR}")
+set(AUXILIARIES_DIR "${SOURCE_DIR}/../auxiliaries")
+set(TEST_DATA_PATH "${AUXILIARIES_DIR}/data/data.bin")
+
+configure_file("${AUXILIARIES_DIR}/test_data_settings.hpp.in" "${AUXILIARIES_DIR}/data/test_data_settings.hpp" @ONLY)
+
+execute_process(COMMAND python ${AUXILIARIES_DIR}/generate_data.py 500 "${TEST_DATA_PATH}" WORKING_DIRECTORY "${AUXILIARIES_DIR}/")
+
+
+add_executable( ${PROJECT_NAME} 
+		${SOURCE_DIR}/main.cpp
+		${SOURCE_DIR}/sort/radix.hpp
+		${SOURCE_DIR}/utils/timer.hpp
+		${SOURCE_DIR}/utils/timer.cpp
+		${SOURCE_DIR}/utils/test_data_reader.hpp
+		${SOURCE_DIR}/utils/test_data_reader.cpp
+)
+
+target_include_directories( ${PROJECT_NAME} PUBLIC "${SOURCE_DIR}" "${AUXILIARIES_DIR}")
