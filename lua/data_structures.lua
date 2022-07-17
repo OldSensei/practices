@@ -308,3 +308,67 @@ pushFirst2(deque2, 2)
 pushFirst2(deque2, 1)
 
 print("\n", popFirst2(deque2), popFirst2(deque2), popFirst2(deque2), popLast2(deque2))
+
+-- segment tree
+local function createSegmentTree(op, ...)
+    local t = table.pack(...)
+    local n = math.pow(2, math.floor(math.log(t.n - 1) / math.log(2)) + 1)
+    local result = { }
+    for i = 1, n do
+        result[n + i - 1] = t[i] or 0
+    end
+    for i = n - 1, 1, -1 do
+        result[i] = op(result[2 * i], result[2 * i + 1])
+    end
+    return result
+end
+
+local add = function (a, b)
+    return a + b
+end
+
+local st = createSegmentTree(add, 1, 2, 3, 4, 5)
+
+local function sum(st, index, sl, sr, l, r)
+    io.write("sum: ", index, " sl: ", sl, " sr: ", sr, " l: ", l, " r: ", r, "\n")
+
+    if l > r then
+        return 0
+    end
+
+    if l == sl and r == sr then
+        return st[index]
+    end
+
+    local m = (sl + sr) // 2
+    return sum(st, index * 2, sl, m, l, math.min(r, m)) +
+            sum(st, index * 2 + 1, m + 1, sr, math.max(m + 1, l), r)
+end
+
+local function update(st, index, l, r, pos, new_value)
+    if l == r then
+        st[index] = new_value
+    else
+        local m = (l + r) // 2
+        if pos <= m then
+            update(st, index * 2, l, m, pos, new_value)
+        else
+            update(st, index * 2 + 1, m + 1, r, pos, new_value)
+        end
+        st[index] = st[index * 2] + st[index * 2 + 1]
+    end
+
+
+end
+
+for k, v in ipairs(st) do
+    io.write(v, ' ')
+end
+
+io.write("\nsum: ", sum(st, 1, 1, 8, 3, 4), "\n")
+
+update(st, 1, 1, 8, 3, 9)
+
+for k, v in ipairs(st) do
+    io.write(v, ' ')
+end
