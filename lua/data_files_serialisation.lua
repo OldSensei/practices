@@ -1,5 +1,6 @@
 
-local serialize = function (o)
+local serialize
+serialize = function (o, indents)
     local t = type(o)
     if  t == "number" or
         t == "string" or
@@ -9,11 +10,14 @@ local serialize = function (o)
     elseif t == "table" then -- do not process a cycle or shared
         io.write("{\n")
         for k, v in pairs(o) do
-            io.write(" ", k, " = ")
-            serialize(v)
+            local s = indents .. " "
+            s = s .. string.format("[%s] = ", k)
+            io.write(s)
+            local indents = string.rep(' ', #s)
+            serialize(v, indents)
             io.write(",\n")
         end
-        io.write("}\n")
+        io.write(indents, "}")
     else
         error("can not serialize a " .. t)
     end
@@ -22,6 +26,7 @@ end
 local function basicSerialize(o)
     return string.format("%q", o)
 end
+
 
 local function save(name, value, saved)
     saved = saved or {}
@@ -45,7 +50,9 @@ local function save(name, value, saved)
     end
 end
 
-a = {x=1, y=2, {3,4,5}}
-a[2] = a
-a.z = a[1]
+a = {x=1, y=2, {3,{'a', 'b'},5}}
+--a[2] = a
+--a.z = a[1]
 save("a",a)
+serialize(a, "")
+io.write("\n")
