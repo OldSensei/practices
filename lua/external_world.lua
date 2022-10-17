@@ -4,7 +4,7 @@ t = io.read("a") -- read all the file
 io.write(t)
 --[[
     a - all file
-    l - line without \n
+    l - line without \n (default)
     L - line with \n
     n - number
     num - read num bytes as a string

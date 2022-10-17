@@ -1,3 +1,5 @@
 This is a simple text data. Pleas count each word frequent.
 If there is something interesting pleas notify me.
-Another string of boring text.
+Another string of boring text. Need to add more boring variants of strings.
+At now this is not any more a simple text data. It will be cool if you notify someone about something.
+Simple solution is the best solution.

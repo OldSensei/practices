@@ -89,6 +89,8 @@ end
 print(trim("  AbcD Tr "))
 print((string.gsub("hello world!", "%a", "%0-%0"))) -- %0 means all match
 
+print(string.match("abc-def", "(%w%-%w)()")) -- will return "c-d 6" ; the empty parenthesis return the position of the matching of a group
+
 local function expand(s)
     local substitution = { world = "moon", hello = "greetings"}
     return (string.gsub(s, "$(%w+)", substitution))
