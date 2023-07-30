@@ -41,9 +41,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            HappyBirthdayTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    Conversation(SampleData.conversationSample)
+            Column{
+                Text("The author is ${getString(R.string.author_name)}") // load resource string
+                Spacer(modifier = Modifier.width(8.dp))
+                HappyBirthdayTheme {
+                    Surface(modifier = Modifier.fillMaxSize()) {
+                        Conversation(SampleData.conversationSample)
+                    }
                 }
             }
         }

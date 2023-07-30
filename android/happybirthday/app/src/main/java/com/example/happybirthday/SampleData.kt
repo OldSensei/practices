@@ -1,3 +1,6 @@
+import android.content.res.Resources
+import com.example.happybirthday.R
+
 /**
  * SampleData for Jetpack Compose Tutorial 
  */
