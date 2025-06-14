@@ -1,2 +1,5 @@
 *.obj
 *.exe
+*.bin
+cpp/algorithms/bin
+cpp/auxiliaries/data
