@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <memory>
+#include <stack>
 #include <type_traits>
-
 #include <iostream>
 
 namespace data_struct
@@ -58,11 +58,156 @@ namespace data_struct
 
 	public:
 
+		class Sentinel {};
+
+		// tag dispatching mechanism
+		class Iterator
+		{
+		public:
+			using iterator_category = std::forward_iterator_tag;
+			using difference_type = std::ptrdiff_t;
+			using value_type = std::decay_t<T>;
+			using pointer = value_type*;
+			using reference = value_type&;
+
+		public:
+			Iterator() = default;
+
+			Iterator(const std::unique_ptr<Node>& root) : 
+				m_node{ root.get() },
+				m_nodesStack{}
+			{
+				traverseToTheMostLeftNode();
+			}
+
+			Iterator(const Iterator& other) noexcept : 
+				m_node{ other.m_node },
+				m_nodesStack{ other.m_nodesStack }
+			{}
+
+			Iterator& operator=(const Iterator& other)
+			{
+				if (this != &other)
+				{
+					this->m_node = other.m_node;
+					this->m_nodesStack = other.m_nodesStack;
+				}
+				return *this;
+			}
+
+			Iterator(Iterator&& other) noexcept : 
+				m_node{other.m_node},
+				m_nodesStack{std::move(other.m_nodesStack)}
+			{
+				other.m_node = nullptr;
+			}
+
+			Iterator& operator=(Iterator&& other)
+			{
+				if (this != &other)
+				{
+					this->m_node = other.m_node;
+					other.m_node = nullptr;
+
+					this->m_nodesStack.clear();
+					this->m_nodesStack = std::move(other.m_nodesStack);
+				}
+
+				return *this;
+			}
+
+			Iterator& operator++()
+			{
+				if (!m_node)
+				{
+					if (!m_nodesStack.empty())
+					{
+						m_node = m_nodesStack.top();
+						m_nodesStack.pop();
+					}
+				}
+				else
+				{
+					m_node = m_node->m_right.get();
+					traverseToTheMostLeftNode();
+				}
+
+				return *this;
+			}
+
+			Iterator operator++(int)
+			{
+				Iterator temp = *this;
+				this->operator++();
+				return *this;
+			}
+
+			T& operator*() const
+			{
+				return this->m_node->m_data;
+			}
+
+			friend bool operator==(const Iterator& a, const Iterator& b)
+			{
+				return a.m_node == b.m_node && a.m_nodesStack == b.m_nodesStack;
+			}
+
+			friend bool operator!=(const Iterator& a, const Iterator& b)
+			{
+				return !operator==(a,b);
+			}
+
+			friend bool operator==(const Iterator& a, const Sentinel&)
+			{
+				return !a.m_node && a.m_nodesStack.empty();
+			}
+
+			friend bool operator==(const Sentinel&, const Iterator& a)
+			{
+				return !a.m_node && a.m_nodesStack.empty();
+			}
+
+			friend bool operator!=(const Iterator& a, const Sentinel&)
+			{
+				return !operator==(a, Sentinel{});
+			}
+
+			friend bool operator!=(const Sentinel&, const Iterator& a)
+			{
+				return !operator==(a, Sentinel{});
+			}
+
+		private:
+			void traverseToTheMostLeftNode()
+			{
+				while (m_node)
+				{
+					m_nodesStack.push(m_node);
+					m_node = m_node->m_left.get();
+				}
+
+				if (!m_nodesStack.empty())
+				{
+					m_node = m_nodesStack.top();
+					m_nodesStack.pop();
+				}
+			}
+
+		private:
+			Node* m_node = nullptr;
+			std::stack<Node*> m_nodesStack;
+		};
+
+	public:
+
 		template<typename U>
 			requires std::is_same_v<T, std::remove_reference_t<U>>
 		void Add(U&& data);
 
 		bool Remove(const T& data);
+
+		Iterator begin() { return Iterator{ m_root }; }
+		Sentinel end() { return Sentinel{}; }
 
 		void print()
 		{

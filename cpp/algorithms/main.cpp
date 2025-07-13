@@ -52,5 +52,12 @@ int main(int argc, const char* argv[])
 	std::cout << std::endl;
 	tree.Remove(7);
 	tree.print();
+
+	std::cout << "\n iterator:" << std::endl;
+	
+	for (const auto& it : tree)
+	{
+		std::cout << it << " ";
+	}
 	return 0;
 }
