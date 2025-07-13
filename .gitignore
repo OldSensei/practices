@@ -1,5 +1,6 @@
 *.obj
 *.exe
 *.bin
+.vscode
 cpp/algorithms/bin
 cpp/auxiliaries/data
