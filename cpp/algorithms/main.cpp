@@ -11,6 +11,25 @@
 #include "utils/test_data_reader.hpp"
 #include "utils/timer.hpp"
 
+namespace
+{
+	template<typename T>
+	void print(const data_struct::AVLTree<T>& tree)
+	{
+		if (tree.isEmpty())
+		{
+			std::cout << "null" << std::endl;
+		}
+
+		for (const auto& it : tree)
+		{
+			std::cout << it << " ";
+		}
+
+		std::cout << std::endl;
+	}
+}
+
 int main(int argc, const char* argv[])
 {
 	/*auto input = Test::Data::readFromBinFile(Test::Data::DATA_FILENAME);
@@ -44,20 +63,15 @@ int main(int argc, const char* argv[])
 	tree.Add(12);
 	tree.Add(6);
 
-	tree.print();
+	print(tree);
 
 	std::cout << std::endl;
 	tree.Remove(6);
-	tree.print();
+	print(tree);
+
 	std::cout << std::endl;
 	tree.Remove(7);
-	tree.print();
+	print(tree);
 
-	std::cout << "\n iterator:" << std::endl;
-	
-	for (const auto& it : tree)
-	{
-		std::cout << it << " ";
-	}
 	return 0;
 }

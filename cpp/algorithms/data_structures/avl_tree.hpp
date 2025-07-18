@@ -1,8 +1,8 @@
+#include <cassert>
 #include <cstdint>
 #include <memory>
 #include <stack>
 #include <type_traits>
-#include <iostream>
 
 namespace data_struct
 {
@@ -60,84 +60,78 @@ namespace data_struct
 
 		class Sentinel {};
 
+	private:
 		// tag dispatching mechanism
-		class Iterator
+		template<typename C>
+		class IteratorImpl
 		{
 		public:
 			using iterator_category = std::forward_iterator_tag;
 			using difference_type = std::ptrdiff_t;
-			using value_type = std::decay_t<T>;
+			using value_type = C;
 			using pointer = value_type*;
 			using reference = value_type&;
 
 		public:
-			Iterator() = default;
+			IteratorImpl() = default;
 
-			Iterator(const std::unique_ptr<Node>& root) : 
-				m_node{ root.get() },
-				m_nodesStack{}
+			IteratorImpl(const std::unique_ptr<Node>& root) noexcept : 
+				m_node{ root.get() }
 			{
-				traverseToTheMostLeftNode();
+				while (m_node && m_node->m_left) m_node = m_node->m_left.get();
 			}
 
-			Iterator(const Iterator& other) noexcept : 
-				m_node{ other.m_node },
-				m_nodesStack{ other.m_nodesStack }
+			IteratorImpl(const IteratorImpl& other) noexcept : 
+				m_node{ other.m_node }
 			{}
 
-			Iterator& operator=(const Iterator& other)
+			IteratorImpl& operator=(const IteratorImpl& other)
 			{
 				if (this != &other)
 				{
 					this->m_node = other.m_node;
-					this->m_nodesStack = other.m_nodesStack;
 				}
 				return *this;
 			}
 
-			Iterator(Iterator&& other) noexcept : 
-				m_node{other.m_node},
-				m_nodesStack{std::move(other.m_nodesStack)}
+			IteratorImpl(IteratorImpl&& other) noexcept : 
+				m_node{other.m_node}
 			{
 				other.m_node = nullptr;
 			}
 
-			Iterator& operator=(Iterator&& other)
+			IteratorImpl& operator=(IteratorImpl&& other)
 			{
 				if (this != &other)
 				{
 					this->m_node = other.m_node;
 					other.m_node = nullptr;
-
-					this->m_nodesStack.clear();
-					this->m_nodesStack = std::move(other.m_nodesStack);
 				}
 
 				return *this;
 			}
 
-			Iterator& operator++()
+			IteratorImpl& operator++()
 			{
-				if (!m_node)
-				{
-					if (!m_nodesStack.empty())
-					{
-						m_node = m_nodesStack.top();
-						m_nodesStack.pop();
-					}
-				}
-				else
+				assert(m_node);
+
+				if (m_node->m_right)
 				{
 					m_node = m_node->m_right.get();
-					traverseToTheMostLeftNode();
+					while (m_node->m_left) m_node = m_node->m_left.get();
+				}
+				else 
+				{
+					while(m_node->m_parent && *m_node > *m_node->m_parent) m_node = m_node->m_parent;
+					m_node = m_node->m_parent;
 				}
 
 				return *this;
 			}
 
-			Iterator operator++(int)
+			IteratorImpl operator++(int)
 			{
-				Iterator temp = *this;
+				IteratorImpl temp = *this;
 				this->operator++();
 				return *this;
 			}
@@ -147,58 +141,44 @@ namespace data_struct
 				return this->m_node->m_data;
 			}
 
-			friend bool operator==(const Iterator& a, const Iterator& b)
+			friend bool operator==(const IteratorImpl& a, const IteratorImpl& b)
 			{
 				return a.m_node == b.m_node && a.m_nodesStack == b.m_nodesStack;
 			}
 
-			friend bool operator!=(const Iterator& a, const Iterator& b)
+			friend bool operator!=(const IteratorImpl& a, const IteratorImpl& b)
 			{
 				return !operator==(a,b);
 			}
 
-			friend bool operator==(const Iterator& a, const Sentinel&)
+			friend bool operator==(const IteratorImpl& a, const Sentinel&)
 			{
-				return !a.m_node && a.m_nodesStack.empty();
+				return !a.m_node;
 			}
 
-			friend bool operator==(const Sentinel&, const Iterator& a)
+			friend bool operator==(const Sentinel&, const IteratorImpl& a)
 			{
-				return !a.m_node && a.m_nodesStack.empty();
+				return !a.m_node;
 			}
 
-			friend bool operator!=(const Iterator& a, const Sentinel&)
+			friend bool operator!=(const IteratorImpl& a, const Sentinel&)
 			{
 				return !operator==(a, Sentinel{});
 			}
 
-			friend bool operator!=(const Sentinel&, const Iterator& a)
+			friend bool operator!=(const Sentinel&, const IteratorImpl& a)
 			{
 				return !operator==(a, Sentinel{});
-			}
-
-		private:
-			void traverseToTheMostLeftNode()
-			{
-				while (m_node)
-				{
-					m_nodesStack.push(m_node);
-					m_node = m_node->m_left.get();
-				}
-
-				if (!m_nodesStack.empty())
-				{
-					m_node = m_nodesStack.top();
-					m_nodesStack.pop();
-				}
 			}
 
 		private:
 			Node* m_node = nullptr;
-			std::stack<Node*> m_nodesStack;
 		};
 
 	public:
+
+		using Iterator = IteratorImpl<T>;
+		using ConstIterator = IteratorImpl<const T>;
 
 		template<typename U>
 			requires std::is_same_v<T, std::remove_reference_t<U>>
@@ -209,21 +189,15 @@ namespace data_struct
 		Iterator begin() { return Iterator{ m_root }; }
 		Sentinel end() { return Sentinel{}; }
 
-		void print()
-		{
-			if (!m_root)
-			{
-				std::cout << "nil ";
-			}
+		ConstIterator begin() const { return ConstIterator{ m_root }; }
+		Sentinel end() const { return Sentinel{}; }
 
-			printNode(m_root);
-		}
+		bool isEmpty() const { return m_root == nullptr; }
 
 	private:
 		void insert(std::unique_ptr<Node>& node);
 		Node* search(const T& data);
 		void del(Node* node);
-		void printNode(std::unique_ptr<Node>& node);
 
 		Node* getMinimal(const std::unique_ptr<Node>& subtreeRoot);
 		std::int32_t getHeight(const std::unique_ptr<Node>& node) const;
@@ -240,19 +214,6 @@ namespace data_struct
 	private:
 		std::unique_ptr<Node> m_root = nullptr;
 	};
-
-	template<typename T>
-	void AVLTree<T>::printNode(std::unique_ptr<Node>& node)
-	{
-		if (!node)
-		{
-			return;
-		}
-
-		printNode(node->m_left);
-		std::cout << node->m_data << "(" << node->m_height << ") ";
-		printNode(node->m_right);
-	}
 
 	template<typename T>
 	AVLTree<T>::Node* AVLTree<T>::getMinimal(const std::unique_ptr<Node>& subtreeRoot)
@@ -562,6 +523,6 @@ namespace data_struct
 			return true;
 		}
 
-		return false;;
+		return false;
 	}
 } // namespace data_struct
